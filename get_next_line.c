@@ -6,7 +6,7 @@
 /*   By: dcuenca <dcuenca@student.42madrid.com>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/19 11:16:10 by dcuenca           #+#    #+#             */
-/*   Updated: 2025/10/23 19:43:27 by dcuenca          ###   ########.fr       */
+/*   Updated: 2025/10/30 20:52:41 by dcuenca          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,9 +46,9 @@ char	*update_stash(char *stash)
 
 	i = 0;
 	k = 0;
-	while (stash[i] != '\n' && stash[i])
+	while (stash[i] && stash[i] != '\n')
 		i++;
-	if (stash[i] == '\0')
+	if (!stash[i] || stash[i + 1] == '\0')
 	{
 		free(stash);
 		return (NULL);
@@ -75,11 +75,12 @@ char	*ft_read_aux(int fd, char *stash)
 	if (buffer == NULL)
 		return (NULL);
 	bytes_read = 1;
-	while ((stash == NULL || ft_strchr(stash, '\n') == NULL) && bytes_read != 0)
+	while ((ft_strchr(stash, '\n') == NULL) && bytes_read != 0)
 	{
 		bytes_read = read(fd, buffer, BUFFER_SIZE);
-		if (bytes_read == -1)
+		if (read(fd, buffer, BUFFER_SIZE) == -1)
 		{
+			free(stash);
 			free(buffer);
 			return (NULL);
 		}
@@ -87,6 +88,11 @@ char	*ft_read_aux(int fd, char *stash)
 		stash = ft_strjoin(stash, buffer);
 	}
 	free(buffer);
+	if (stash[0] == '\0')
+	{
+		free(stash);
+		return (NULL);
+	}
 	return (stash);
 }
 
@@ -97,6 +103,8 @@ char	*get_next_line(int fd)
 
 	if (fd < 0 || BUFFER_SIZE <= 0)
 		return (NULL);
+	if (!stash)
+		stash = ft_strdup("");
 	stash = ft_read_aux(fd, stash);
 	if (!stash)
 		return (NULL);
